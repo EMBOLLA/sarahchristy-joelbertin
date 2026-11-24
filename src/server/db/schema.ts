@@ -10,16 +10,19 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { TICKET_TYPES } from "../../lib/wedding/ticket-types";
 
-export const ticketType = pgEnum("ticket_type", ["solo", "couple"]);
+export const ticketType = pgEnum("ticket_type", TICKET_TYPES);
 
 /**
  * Result of cross-checking a submission against the protocol's list:
- * - matched:  found in `guests` → ticket shows the "invité" mark (+ table once assigned)
+ * - matched:  found in `guests` → ticket shows the "listed" mark (+ table once assigned)
  * - unlisted: not found → ticket still generated, flagged for the protocol at the door
  * - manual:   protocol linked/validated it by hand in the back-office
  */
-export const matchStatus = pgEnum("match_status", ["matched", "unlisted", "manual"]);
+export const MATCH_STATUSES = ["matched", "unlisted", "manual"] as const;
+export const matchStatus = pgEnum("match_status", MATCH_STATUSES);
+export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -35,8 +38,10 @@ export const guests = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     displayName: text("display_name").notNull(),
+    partnerName: text("partner_name"),
     /** `nameMatchKey(displayName)` — see src/lib/wedding/names.ts */
     matchKey: text("match_key").notNull(),
+    partnerMatchKey: text("partner_match_key"),
     ticketType: ticketType("ticket_type").notNull(),
     tableNumber: integer("table_number"),
     notes: text("notes"),
@@ -44,6 +49,7 @@ export const guests = pgTable(
   },
   (t) => [
     index("guests_match_key_idx").on(t.matchKey),
+    index("guests_partner_match_key_idx").on(t.partnerMatchKey),
     check("guests_table_positive", sql`${t.tableNumber} IS NULL OR ${t.tableNumber} > 0`),
   ],
 );
@@ -59,6 +65,7 @@ export const tickets = pgTable(
     primaryName: text("primary_name").notNull(),
     partnerName: text("partner_name"),
     matchKey: text("match_key").notNull(),
+    partnerMatchKey: text("partner_match_key"),
     guestId: uuid("guest_id").references(() => guests.id, { onDelete: "set null" }),
     matchStatus: matchStatus("match_status").notNull(),
     locale: text("locale").notNull(),
@@ -67,6 +74,7 @@ export const tickets = pgTable(
   },
   (t) => [
     index("tickets_match_key_idx").on(t.matchKey),
+    index("tickets_guest_id_idx").on(t.guestId),
     check(
       "tickets_partner_matches_type",
       sql`(${t.ticketType} = 'couple') = (${t.partnerName} IS NOT NULL)`,

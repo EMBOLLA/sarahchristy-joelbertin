@@ -55,12 +55,19 @@ Je ne peux pas produire la vidéo dans Canva moi-même : c'est à toi de l'expor
 
 ## Roadmap
 
-1. ✅ Scaffold : Next 16, shadcn, Lenis + GSAP, i18n, schéma DB, compte à rebours, lieux
-2. Vidéo hero (export Canva → encodage → `WEDDING.media.heroVideo`)
-3. Identité visuelle : palette + polices issues du faire-part papier (tokens dans `globals.css`)
-4. Formulaire billet (Server Action + Zod) → matching → génération PDF + QR
-5. Back-office : auth (mot de passe + cookie signé jose), liste invités, import CSV, tables, FAQ
-6. Page de scan protocole
-7. FAQ publique depuis la DB (`use cache` + `cacheTag`, invalidée à l'édition)
-8. Animation jour J (confettis / pétales, `canvas-confetti`), OG image, `.ics`
-9. Déploiement Vercel + Neon (Marketplace), migrations
+1. ✅ Scaffold : Next 16, shadcn, Lenis + GSAP, i18n, schéma DB
+2. ✅ Thème : terracotta / blanc cassé / or, Pinyon Script (titres, initiales or) + EB Garamond, angles droits
+3. ✅ Formulaire billet → matching liste → PDF (QR + marque + table) → re-téléchargement
+4. ✅ Back-office : login, billets (filtres, check-in, rattachement), invités (ajout, import CSV, tables, occupation), FAQ, export CSV
+5. ✅ Fiche de scan à l'entrée (vert / orange / rouge « déjà entré »)
+6. ✅ FAQ publique en cache, programme (étape en cours le jour J), dress code, contact WhatsApp, `.ics` + Google Agenda, aperçu Open Graph, bandeau + confettis le jour J (`?preview=day` pour tester)
+7. ⏳ Vidéo hero (export Canva → encodage → `WEDDING.media.heroVideo`)
+8. ⏳ Vraies infos (`src/config/wedding.ts`), templates PDF + police (`docs/TICKETS.md`)
+9. ⏳ Passe de mise en forme (avec la vidéo)
+10. ⏳ Déploiement Vercel + Neon
+
+## Reste ouvert
+
+- **Rate-limit** du formulaire : honeypot seulement. Si du spam apparaît → table `rate_limits` en Postgres (pas besoin d'Upstash à ce volume).
+- **Matching approximatif** (fautes de frappe) : `pg_trgm` pour suggérer des correspondances dans le back-office.
+- **Brute-force du mot de passe admin** : pas de limitation de tentatives. Mot de passe long obligatoire (≥ 12) ; ajouter un délai progressif si le lien fuit.

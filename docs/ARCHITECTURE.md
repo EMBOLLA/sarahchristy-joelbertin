@@ -3,92 +3,103 @@
 ## Arborescence
 
 ```
+assets/                           # Lu au runtime (fonts OFL, templates PDF) — tracé via next.config
+drizzle/                          # Migrations SQL versionnées
 src/
 ├── proxy.ts                      # Négociation de langue (rewrite) — ex-middleware
 ├── app/
-│   ├── globals.css               # Tokens shadcn + Tailwind v4
-│   └── [lang]/                   # Root layout : TOUTES les pages sont sous [lang]
-│       ├── layout.tsx            # <html lang>, polices, SmoothScrollProvider, Toaster
-│       └── page.tsx              # Accueil (sections)
-├── config/wedding.ts             # Faits de l'événement (noms, date, lieux, médias)
-├── i18n/
-│   ├── config.ts                 # LOCALES, resolveLocale() — pur, testé
-│   ├── get-dictionary.ts         # getLocale()/getDictionary() via next/root-params
-│   └── dictionaries/{fr,en}.ts   # fr = référence de type, en `satisfies Dictionary`
-├── lib/
-│   ├── gsap.ts                   # Point UNIQUE d'enregistrement des plugins GSAP
-│   └── wedding/                  # Logique métier pure (pas de React, pas d'I/O)
-│       ├── phase.ts              # before | day | after (fuseau du lieu), compte à rebours
-│       ├── maps.ts               # Liens GPS universels
-│       └── names.ts              # Normalisation pour le matching invités
-├── hooks/use-prefers-reduced-motion.ts
+│   ├── [lang]/                   # Root layout : toutes les pages sont sous [lang]
+│   │   ├── page.tsx              # Accueil (statique, FAQ en cache)
+│   │   ├── opengraph-image.tsx   # Aperçu WhatsApp
+│   │   ├── check/[code]/         # Fiche scannée à l'entrée (PPR + Suspense)
+│   │   └── admin/
+│   │       ├── login/            # Statique
+│   │       └── (protected)/      # Billets, invités & tables, FAQ (PPR + Suspense)
+│   └── api/
+│       ├── tickets/[code]/pdf/   # Génération du billet
+│       ├── calendar/[lang]/      # .ics prérendu
+│       └── admin/export/         # CSV (auth)
+├── config/wedding.ts             # Faits de l'événement (noms, date, lieux, programme, contact)
+├── i18n/                         # Locales, dictionnaires typés (fr = référence)
+├── lib/                          # Pur : aucun I/O, testé (Vitest)
+│   ├── csv.ts                    # Import/export invités
+│   ├── safe-redirect.ts          # Anti open-redirect post-login
+│   └── wedding/                  # names, phase, maps, calendar, ticket-request (Zod partagé)
+├── hooks/                        # useNow, usePrefersReducedMotion
 ├── components/
-│   ├── ui/                       # shadcn (généré, ne pas éditer à la main sans raison)
-│   ├── providers/smooth-scroll-provider.tsx
+│   ├── typography.tsx            # ScriptHeading (initiale or), Gold, Ornament, Section
+│   ├── sections/                 # hero, countdown, schedule, venue-card, faq, wedding-day
+│   ├── rsvp/                     # Formulaire billet + billet mémorisé sur l'appareil
+│   ├── admin/                    # Formulaires et UI du back-office
 │   ├── motion/video-scrub.tsx
-│   ├── sections/                 # hero, countdown, venue-card…
-│   └── language-switcher.tsx
-└── server/                       # server-only : jamais importable côté client
-    ├── env.ts                    # Variables d'env validées par Zod (lazy)
-    └── db/{schema,client}.ts     # Drizzle + Neon HTTP
+│   └── ui/                       # shadcn
+└── server/                       # server-only
+    ├── env.ts                    # Env Zod, un schéma par domaine, validation lazy
+    ├── db/                       # schema.ts, client.ts (Neon HTTP en prod, pg en local)
+    ├── auth/                     # session (jose), guard des pages
+    ├── tickets/                  # service (matching, dédoublonnage, check-in), pdf, layout
+    ├── guests/                   # service (import, tables, occupation)
+    ├── faq/                      # service ('use cache' + tag)
+    └── actions/                  # Server Actions : ticket (public), admin
 ```
 
-Règle de dépendance : `components → lib, i18n, config` ; `server → lib, config`. `lib/` ne dépend de rien d'applicatif → testable en isolation (Vitest).
+Règles de dépendance : `app → components → lib/i18n/config`, `app → server → lib/config`. `lib/` ne dépend de rien d'applicatif. Les composants n'accèdent jamais à la DB directement : ils passent par `server/*/service.ts` (lecture) ou `server/actions` (écriture).
 
-## i18n
+## Rendu (Next 16, Cache Components)
 
-1. Requête sur `/` → `proxy.ts` lit le cookie `NEXT_LOCALE`, sinon `Accept-Language` (langue de l'appareil), sinon `fr`.
-2. **Rewrite** interne vers `/fr` ou `/en` : l'URL visible reste `/`.
-3. `app/[lang]/layout.tsx` déclare `generateStaticParams` → les deux langues sont **prérendues statiquement**.
-4. Les Server Components appellent `getDictionary()` sans argument (`next/root-params`).
-5. Les Client Components reçoivent **uniquement la tranche** de dictionnaire dont ils ont besoin en props (pas tout le dictionnaire dans le bundle).
-6. Le sélecteur de langue pose le cookie (prioritaire ensuite) et navigue vers `/{locale}`.
+| Route | Rendu | Pourquoi |
+| --- | --- | --- |
+| `/fr`, `/en` | Statique | La FAQ est en `'use cache'` (tag `faq`), invalidée par `updateTag` à chaque édition |
+| `/admin/login` | Statique | Lit `?next=` côté client, pas de `searchParams` serveur |
+| `/admin/*`, `/check/[code]` | Shell statique + contenu en streaming | Lecture du cookie de session → derrière `<Suspense>` (obligatoire) |
+| `/api/calendar/[lang]` | Prérendu | Aucune donnée de requête |
+| `/api/tickets/[code]/pdf` | Dynamique | `Cache-Control: no-store` : la table peut changer |
 
-Ajouter une clé : l'ajouter dans `fr.ts` → TypeScript signale l'oubli dans `en.ts`.
+Le build exige la DB **si** `DATABASE_URL` est défini (prérendu de la FAQ). Sans variable : FAQ vide, build OK (CI).
 
-## Motion : Lenis × GSAP
+## Sécurité
 
-- Lenis tourne avec `autoRaf: false` et est avancé par `gsap.ticker` → **une seule boucle rAF**, pas de décalage entre scroll lissé et animations scrubbées.
-- Chaque frame Lenis appelle `ScrollTrigger.update()`.
-- `prefers-reduced-motion` : scroll natif, et le scrub vidéo n'est pas monté (`gsap.matchMedia`).
-- Toujours importer depuis `@/lib/gsap`, et animer via `useGSAP` (nettoyage automatique au démontage — important avec l'`<Activity>` de Cache Components qui garde les routes montées en caché).
+- **Chaque Server Action admin** appelle `assertAdmin()` et valide ses arguments liés (`bind`) avec Zod : une action est un endpoint POST public, quelle que soit la page qui l'affiche.
+- Pages admin : `requireAdminPage()` dans la zone Suspense, **avant** toute lecture de données.
+- Session : JWT HS256 (jose), cookie `HttpOnly`, `SameSite=Lax`, `Secure` en prod, 7 jours. Mot de passe comparé en temps constant (hash SHA-256 des deux côtés).
+- QR : identifiant aléatoire 128 bits (non devinable), jamais la clé primaire.
+- Post-login : redirection limitée à `/(fr|en)/(admin|check)/…` (pas d'open redirect).
+- `robots: noindex` sur tout le site (faire-part privé).
+- Honeypot sur le formulaire public. Pas de rate-limit (voir BRAINSTORM).
 
 ## Données
 
 | Table | Rôle |
 | --- | --- |
-| `guests` | Liste du protocole : nom, `match_key`, solo/couple, n° de table |
-| `tickets` | Un billet par soumission : `public_code` (QR), statut de matching, check-in |
-| `faq_items` | FAQ bilingue, ordonnée, publiable |
+| `guests` | Liste du protocole : nom, partenaire, clés de matching, type, table |
+| `tickets` | Un billet par demande : `public_code` (QR), statut de matching, check-in |
+| `faq_items` | FAQ bilingue, ordre, publication |
 
-Contraintes en base (pas seulement en Zod) : un billet `couple` a forcément `partner_name`, un `solo` jamais ; n° de table > 0.
+Contraintes en base : un billet `couple` a forcément un partenaire, un `solo` jamais ; table > 0.
+Pas de transactions interactives (le driver Neon HTTP n'en a pas) : les opérations multi-étapes sont ordonnées pour rester cohérentes en cas d'échec partiel.
 
-## Flux billet (à implémenter)
+## Développement local
 
-```
-Formulaire (Client) ──Server Action──▶ Zod ──▶ nameMatchKey()
-                                              │
-                         guests.match_key ? ──┴──▶ matched / unlisted
-                                              │
-                         INSERT tickets (public_code aléatoire)
-                                              │
-               Route Handler /api/tickets/{publicCode}/pdf
-                 pdf-lib : template solo|couple (server-only, pas dans /public)
-                 + fontkit : police du faire-part embarquée
-                 + QR → https://site/check/{publicCode}
+```bash
+docker run -d --name wedding-pg -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=wedding -p 5432:5432 postgres:16
 ```
 
-Vérifier la **licence de la police** : elle doit autoriser l'embarquement PDF.
+```bash
+cp .env.example .env.local
+```
 
-## Back-office
+```bash
+pnpm db:migrate
+```
 
-Auth minimale et suffisante pour ce contexte : un mot de passe partagé (`ADMIN_PASSWORD`), comparaison à temps constant, session dans un cookie `HttpOnly; Secure; SameSite=Lax` signé avec `jose` (`SESSION_SECRET`). Vérification **dans chaque Server Action / Route Handler admin** — `proxy.ts` ne sert que de filtre de confort, jamais de seule barrière.
+```bash
+pnpm dev
+```
 
 ## Déploiement Vercel (Hobby)
 
 1. Importer le repo sur Vercel.
-2. Storage → Neon (Marketplace) → injecte `DATABASE_URL`.
-3. Ajouter `ADMIN_PASSWORD`, `SESSION_SECRET`, `WEDDING_TABLE_COUNT`.
-4. Migrations : `pnpm db:generate` en local, commit du dossier `drizzle/`, puis `pnpm db:migrate` contre la base de prod.
-
-Limites Hobby à garder en tête : usage non commercial (ok pour un mariage familial), fonctions limitées en durée — la génération PDF pdf-lib prend quelques centaines de ms, sans souci.
+2. Storage → **Neon** (Marketplace) → injecte `DATABASE_URL`.
+3. Ajouter `ADMIN_PASSWORD`, `SESSION_SECRET`, `WEDDING_TABLE_COUNT`, `WEDDING_TABLE_CAPACITY`.
+4. Appliquer les migrations sur la base Neon : `DATABASE_URL=<url neon> pnpm db:migrate` (depuis ton poste).
+5. Déployer. Modifier le schéma ensuite : `pnpm db:generate` → commit du dossier `drizzle/` → `pnpm db:migrate`.

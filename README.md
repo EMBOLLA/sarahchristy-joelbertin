@@ -13,10 +13,11 @@ Site de faire-part de mariage, mobile first, bilingue FR/EN (selon la langue de 
 | Couche | Choix |
 | --- | --- |
 | Framework | Next.js 16 (App Router, Cache Components, `proxy.ts`) |
-| UI | shadcn/ui (base-nova, Base UI) + Tailwind v4 |
+| UI | shadcn/ui (base-nova, Base UI) + Tailwind v4 — terracotta / blanc cassé / or |
+| Typo | Pinyon Script (titres, noms) + EB Garamond (texte), licences OFL |
 | Motion | GSAP 3 + ScrollTrigger, Lenis (piloté par le ticker GSAP) |
 | i18n | Natif Next (`app/[lang]` + `next/root-params`), dictionnaires typés |
-| Données | Neon Postgres + Drizzle ORM (driver HTTP serverless) |
+| Données | Neon Postgres + Drizzle ORM (HTTP serverless en prod, node-postgres en local) |
 | PDF | pdf-lib + fontkit, QR via `qrcode` |
 | Hébergement | Vercel Hobby |
 
@@ -31,8 +32,14 @@ cp .env.example .env.local
 ```
 
 ```bash
+pnpm db:migrate
+```
+
+```bash
 pnpm dev
 ```
+
+Postgres local en une commande : voir [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#développement-local).
 
 ## Scripts
 
@@ -48,10 +55,14 @@ pnpm dev
 
 - [`docs/BRAINSTORM.md`](docs/BRAINSTORM.md) — décisions, améliorations retenues, roadmap
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — structure du code, i18n, données, flux billet
+- [`docs/TICKETS.md`](docs/TICKETS.md) — flux billet, templates PDF, mode d'emploi protocole le jour J
 - [`docs/VIDEO_SCRUB.md`](docs/VIDEO_SCRUB.md) — cahier des charges de la vidéo Canva + encodage
 
 ## Où modifier quoi
 
-- Noms, date, lieux, vidéo : `src/config/wedding.ts`
+- Noms, date, lieux, programme, contact, vidéo : `src/config/wedding.ts`
 - Textes : `src/i18n/dictionaries/fr.ts` (référence) et `en.ts`
-- Nombre de tables : variable d'env `WEDDING_TABLE_COUNT`
+- Couleurs, arrondis : tokens dans `src/app/globals.css`
+- Tables : variables d'env `WEDDING_TABLE_COUNT`, `WEDDING_TABLE_CAPACITY`
+- Billets PDF : `assets/tickets/*.pdf` + `src/server/tickets/pdf-layout.ts`
+- Back-office : `/admin` (mot de passe `ADMIN_PASSWORD`)
