@@ -39,8 +39,9 @@ describe("getRemaining", () => {
 });
 
 describe("buildDirectionsUrl", () => {
-  const byName = { location: null, mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun" };
-  const byPin = { location: { lat: 5.6243, lng: 10.2551 }, mapsQuery: "ignored" };
+  const byName = { location: null, mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun", googleMapsUrl: null };
+  const byPin = { location: { lat: 5.6243, lng: 10.2551 }, mapsQuery: "ignored", googleMapsUrl: "https://maps.app.goo.gl/x" };
+  const byShareLink = { ...byName, googleMapsUrl: "https://maps.app.goo.gl/RsHgZ1v3PkapS8Xo8" };
 
   it("searches by place name when no verified pin exists", () => {
     expect(buildDirectionsUrl("google", byName)).toBe(
@@ -49,7 +50,15 @@ describe("buildDirectionsUrl", () => {
     expect(buildDirectionsUrl("waze", byName)).toContain("waze.com/ul?q=Mairie%20de%20Mbouda");
   });
 
+  it("opens the shared Google pin, other apps still search by name", () => {
+    expect(buildDirectionsUrl("google", byShareLink)).toBe("https://maps.app.goo.gl/RsHgZ1v3PkapS8Xo8");
+    expect(buildDirectionsUrl("waze", byShareLink)).toContain("waze.com/ul?q=Mairie%20de%20Mbouda");
+  });
+
   it("uses exact coordinates when provided", () => {
+    expect(buildDirectionsUrl("google", byPin)).toBe(
+      "https://www.google.com/maps/dir/?api=1&destination=5.6243%2C10.2551",
+    );
     expect(buildDirectionsUrl("waze", byPin)).toBe("https://waze.com/ul?ll=5.6243%2C10.2551&navigate=yes");
     expect(buildDirectionsUrl("apple", byPin)).toBe("https://maps.apple.com/?daddr=5.6243%2C10.2551");
   });

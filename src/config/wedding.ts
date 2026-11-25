@@ -12,6 +12,8 @@ export type Venue = Readonly<{
   location: GeoPoint | null;
   /** Place name as map apps know it (fallback when no verified coordinates). */
   mapsQuery: string;
+  /** Google Maps share link of the exact pin (maps.app.goo.gl/…), when provided by the protocol. */
+  googleMapsUrl: string | null;
 }>;
 
 /** Ids are translated in `dictionaries.schedule.items[id]`. */
@@ -43,8 +45,12 @@ export type WeddingConfig = Readonly<{
   }>;
 }>;
 
-// TODO(protocole): heure de la cérémonie, lieu de réception et horaires du programme à confirmer.
+// TODO(protocole): heure de la cérémonie et horaires du programme à confirmer.
 // Cameroun : UTC+1 toute l'année (pas d'heure d'été) → offset +01:00.
+
+/** Repère posé par le protocole sur le nouvel hôtel de ville. */
+const MAIRIE_MBOUDA_PIN = "https://maps.app.goo.gl/RsHgZ1v3PkapS8Xo8";
+
 export const WEDDING = {
   couple: { first: "Sarah Christy", second: "Joël Bertin" },
   ceremonyAt: "2027-03-27T14:00:00+01:00",
@@ -53,15 +59,18 @@ export const WEDDING = {
   ceremony: {
     name: "Mairie de Mbouda",
     address: "Hôtel de Ville, Mbouda — Bamboutos, Région de l'Ouest, Cameroun",
-    // TODO(protocole): coller les coordonnées exactes du repère Google Maps du nouvel hôtel de ville.
+    // TODO(protocole): coordonnées chiffrées du repère (appui long sur le pin dans Google Maps)
+    // → active aussi la position exacte pour Waze et Apple Maps.
     location: null,
     mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun",
+    googleMapsUrl: MAIRIE_MBOUDA_PIN,
   },
   reception: {
-    name: "Salle de réception",
-    address: "Adresse à compléter",
+    name: "Salle des fêtes de la Mairie",
+    address: "Hôtel de Ville, Mbouda — Bamboutos, Région de l'Ouest, Cameroun",
     location: null,
-    mapsQuery: "Mbouda, Cameroun",
+    mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun",
+    googleMapsUrl: MAIRIE_MBOUDA_PIN,
   },
   schedule: [
     { id: "ceremony", at: "2027-03-27T14:00:00+01:00", venue: "ceremony" },
@@ -71,7 +80,8 @@ export const WEDDING = {
   ],
   contact: {
     name: "Protocole",
-    whatsapp: "33600000000",
+    // +237 6 88 38 92 15 (Cameroun)
+    whatsapp: "237688389215",
   },
   media: {
     heroVideo: null,
