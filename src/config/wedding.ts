@@ -8,7 +8,10 @@ export type GeoPoint = Readonly<{ lat: number; lng: number }>;
 export type Venue = Readonly<{
   name: string;
   address: string;
-  location: GeoPoint;
+  /** Exact pin. `null` until verified — map links then search by `mapsQuery` instead. */
+  location: GeoPoint | null;
+  /** Place name as map apps know it (fallback when no verified coordinates). */
+  mapsQuery: string;
 }>;
 
 /** Ids are translated in `dictionaries.schedule.items[id]`. */
@@ -40,27 +43,31 @@ export type WeddingConfig = Readonly<{
   }>;
 }>;
 
-// TODO(protocole): remplacer les valeurs factices par les vraies infos.
+// TODO(protocole): heure de la cérémonie, lieu de réception et horaires du programme à confirmer.
+// Cameroun : UTC+1 toute l'année (pas d'heure d'été) → offset +01:00.
 export const WEDDING = {
   couple: { first: "Sarah Christy", second: "Joël Bertin" },
-  ceremonyAt: "2027-06-12T14:00:00+02:00",
-  endsAt: "2027-06-13T02:00:00+02:00",
-  timeZone: "Europe/Paris",
+  ceremonyAt: "2027-03-27T14:00:00+01:00",
+  endsAt: "2027-03-28T02:00:00+01:00",
+  timeZone: "Africa/Douala",
   ceremony: {
-    name: "Mairie",
-    address: "Adresse à compléter",
-    location: { lat: 48.8566, lng: 2.3522 },
+    name: "Mairie de Mbouda",
+    address: "Hôtel de Ville, Mbouda — Bamboutos, Région de l'Ouest, Cameroun",
+    // TODO(protocole): coller les coordonnées exactes du repère Google Maps du nouvel hôtel de ville.
+    location: null,
+    mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun",
   },
   reception: {
     name: "Salle de réception",
     address: "Adresse à compléter",
-    location: { lat: 48.8566, lng: 2.3522 },
+    location: null,
+    mapsQuery: "Mbouda, Cameroun",
   },
   schedule: [
-    { id: "ceremony", at: "2027-06-12T14:00:00+02:00", venue: "ceremony" },
-    { id: "cocktail", at: "2027-06-12T17:00:00+02:00", venue: "reception" },
-    { id: "dinner", at: "2027-06-12T19:30:00+02:00", venue: "reception" },
-    { id: "party", at: "2027-06-12T22:30:00+02:00", venue: "reception" },
+    { id: "ceremony", at: "2027-03-27T14:00:00+01:00", venue: "ceremony" },
+    { id: "cocktail", at: "2027-03-27T17:00:00+01:00", venue: "reception" },
+    { id: "dinner", at: "2027-03-27T19:30:00+01:00", venue: "reception" },
+    { id: "party", at: "2027-03-27T22:30:00+01:00", venue: "reception" },
   ],
   contact: {
     name: "Protocole",

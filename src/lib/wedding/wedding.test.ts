@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { nameMatchKey, normalizeName } from "./names";
 import { getRemaining, getWeddingPhase } from "./phase";
+import { buildDirectionsUrl } from "./maps";
 
 describe("names", () => {
   it("strips accents, case, punctuation and extra spaces", () => {
@@ -34,5 +35,30 @@ describe("getRemaining", () => {
       seconds: 1,
     });
     expect(getRemaining(target, target)).toBeNull();
+  });
+});
+
+describe("buildDirectionsUrl", () => {
+  const byName = { location: null, mapsQuery: "Mairie de Mbouda, Mbouda, Cameroun" };
+  const byPin = { location: { lat: 5.6243, lng: 10.2551 }, mapsQuery: "ignored" };
+
+  it("searches by place name when no verified pin exists", () => {
+    expect(buildDirectionsUrl("google", byName)).toBe(
+      "https://www.google.com/maps/dir/?api=1&destination=Mairie%20de%20Mbouda%2C%20Mbouda%2C%20Cameroun",
+    );
+    expect(buildDirectionsUrl("waze", byName)).toContain("waze.com/ul?q=Mairie%20de%20Mbouda");
+  });
+
+  it("uses exact coordinates when provided", () => {
+    expect(buildDirectionsUrl("waze", byPin)).toBe("https://waze.com/ul?ll=5.6243%2C10.2551&navigate=yes");
+    expect(buildDirectionsUrl("apple", byPin)).toBe("https://maps.apple.com/?daddr=5.6243%2C10.2551");
+  });
+});
+
+describe("getWeddingPhase in Cameroon", () => {
+  it("switches at midnight Douala time (UTC+1)", () => {
+    const ceremony = new Date("2027-03-27T14:00:00+01:00");
+    expect(getWeddingPhase(new Date("2027-03-26T22:59:00Z"), ceremony, "Africa/Douala")).toBe("before");
+    expect(getWeddingPhase(new Date("2027-03-26T23:00:00Z"), ceremony, "Africa/Douala")).toBe("day");
   });
 });

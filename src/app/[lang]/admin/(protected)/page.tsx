@@ -1,3 +1,4 @@
+import { WEDDING } from "@/config/wedding";
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { AlertTriangleIcon, FileTextIcon, ScanLineIcon } from "lucide-react";
@@ -43,7 +44,7 @@ function applyFilter(views: ReadonlyArray<TicketView>, filter: Filter): Readonly
   }
 }
 
-const timeFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" });
+const timeFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: WEDDING.timeZone });
 
 type TicketCardProps = Readonly<{ view: TicketView; guests: ReadonlyArray<GuestWithTicket>; locale: Locale }>;
 

@@ -1,20 +1,25 @@
-import type { GeoPoint } from "@/config/wedding";
+import type { Venue } from "@/config/wedding";
 
 export type MapProvider = "google" | "waze" | "apple";
 
 /**
  * Universal links: on mobile they open the native app when installed (GPS directions),
  * otherwise the website. No `geo:` URI — unsupported on iOS.
+ *
+ * Exact coordinates win when known; otherwise the app resolves the place by name,
+ * which beats approximate coordinates that would drop guests a few blocks away.
  */
-export function buildDirectionsUrl(provider: MapProvider, { lat, lng }: GeoPoint): string {
-  const coords = `${lat},${lng}`;
+export function buildDirectionsUrl(provider: MapProvider, venue: Pick<Venue, "location" | "mapsQuery">): string {
+  const coords = venue.location ? `${venue.location.lat},${venue.location.lng}` : null;
+  const target = encodeURIComponent(coords ?? venue.mapsQuery);
+
   switch (provider) {
     case "google":
-      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(coords)}`;
+      return `https://www.google.com/maps/dir/?api=1&destination=${target}`;
     case "waze":
-      return `https://waze.com/ul?ll=${encodeURIComponent(coords)}&navigate=yes`;
+      return coords ? `https://waze.com/ul?ll=${target}&navigate=yes` : `https://waze.com/ul?q=${target}&navigate=yes`;
     case "apple":
-      return `https://maps.apple.com/?daddr=${encodeURIComponent(coords)}`;
+      return `https://maps.apple.com/?daddr=${target}`;
   }
 }
 

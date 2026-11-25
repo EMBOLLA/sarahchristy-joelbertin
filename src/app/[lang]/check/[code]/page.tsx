@@ -1,3 +1,4 @@
+import { WEDDING } from "@/config/wedding";
 import { Suspense, type ReactNode } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-const timeFormat = new Intl.DateTimeFormat("fr-FR", { timeStyle: "short", timeZone: "Europe/Paris" });
+const timeFormat = new Intl.DateTimeFormat("fr-FR", { timeStyle: "short", timeZone: WEDDING.timeZone });
 
 function Names({ view }: Readonly<{ view: TicketView }>): ReactNode {
   return (

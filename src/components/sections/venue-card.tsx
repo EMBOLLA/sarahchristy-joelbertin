@@ -19,7 +19,7 @@ export function VenueCard({ label, venue, openInLabel }: VenueCardProps): ReactN
         {MAP_PROVIDERS.map(({ id, label: providerLabel }) => (
           <a
             key={id}
-            href={buildDirectionsUrl(id, venue.location)}
+            href={buildDirectionsUrl(id, venue)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${openInLabel} ${providerLabel}`}
