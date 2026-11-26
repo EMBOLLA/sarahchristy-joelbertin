@@ -61,11 +61,13 @@ export default async function HomePage(): Promise<ReactNode> {
     <>
       <WeddingDay ceremonyIso={WEDDING.ceremonyAt} timeZone={WEDDING.timeZone} banner={dict.weddingDay.banner} />
 
-      <header className="fixed top-0 right-0 z-50 p-3">
-        <LanguageSwitcher target={locale === "fr" ? "en" : "fr"} label={dict.language.switchTo} />
-      </header>
+      <main className="relative mx-auto w-full max-w-md">
+        {/* Anchored to the top of the content (below the wedding-day banner), not fixed:
+            never overlaps the banner nor the sections while scrolling. */}
+        <header className="absolute top-0 right-0 z-10 p-3">
+          <LanguageSwitcher target={locale === "fr" ? "en" : "fr"} label={dict.language.switchTo} />
+        </header>
 
-      <main className="mx-auto w-full max-w-md">
         <Hero labels={dict.hero} locale={locale} />
 
         <Section title={dict.countdown.title}>

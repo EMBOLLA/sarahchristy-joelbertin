@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 !.env.example
+
+# LaTeX build files
+docs/presentation/*.aux
+docs/presentation/*.log
+docs/presentation/*.out

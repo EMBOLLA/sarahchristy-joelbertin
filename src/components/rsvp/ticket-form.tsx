@@ -72,13 +72,17 @@ function TicketTypeChoice({
   );
 }
 
-function TicketFormInner({ locale, labels, onReset }: TicketFormProps & Readonly<{ onReset: () => void }>): ReactNode {
+type InnerProps = TicketFormProps & Readonly<{ onReset: () => void; onCreated: (publicCode: string) => void }>;
+
+function TicketFormInner({ locale, labels, onReset, onCreated }: InnerProps): ReactNode {
   const [state, formAction, pending] = useActionState(submitTicketRequest, INITIAL_STATE);
   const [ticketType, setTicketType] = useState<TicketType>("solo");
 
   useEffect(() => {
-    if (state.status === "success") rememberTicket({ publicCode: state.publicCode, names: state.names });
-  }, [state]);
+    if (state.status !== "success") return;
+    rememberTicket({ publicCode: state.publicCode, names: state.names });
+    onCreated(state.publicCode);
+  }, [state, onCreated]);
 
   if (state.status === "success") {
     return (
@@ -160,11 +164,19 @@ function TicketFormInner({ locale, labels, onReset }: TicketFormProps & Readonly
 export function TicketForm(props: TicketFormProps): ReactNode {
   // Remounting is the only way to reset useActionState for "create another ticket".
   const [formKey, setFormKey] = useState(0);
+  // Ticket shown in the success card right now — not repeated in the "remembered" banner.
+  const [onScreenCode, setOnScreenCode] = useState<string | null>(null);
   const remembered = useRememberedTicket();
+  const showRemembered = remembered !== null && remembered.publicCode !== onScreenCode;
+
+  const reset = (): void => {
+    setOnScreenCode(null);
+    setFormKey((key) => key + 1);
+  };
 
   return (
     <div className="space-y-6">
-      {remembered && (
+      {showRemembered && (
         <Alert>
           <TicketIcon aria-hidden />
           <AlertTitle>{props.labels.remembered}</AlertTitle>
@@ -174,7 +186,7 @@ export function TicketForm(props: TicketFormProps): ReactNode {
           </AlertDescription>
         </Alert>
       )}
-      <TicketFormInner key={formKey} {...props} onReset={() => setFormKey((key) => key + 1)} />
+      <TicketFormInner key={formKey} {...props} onReset={reset} onCreated={setOnScreenCode} />
     </div>
   );
 }

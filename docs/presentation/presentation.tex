@@ -1,0 +1,297 @@
+% Présentation du site faire-part — à compiler avec XeLaTeX (voir README.md du dossier).
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=2.2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage{fontspec}
+\usepackage[french]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+% ── Couleurs du mariage ────────────────────────────────────────────────────
+\definecolor{terracotta}{HTML}{A8532F}
+\definecolor{gold}{HTML}{BE9A45}
+\definecolor{ink}{HTML}{3E2C23}
+\definecolor{ivory}{HTML}{FAF6F0}
+\definecolor{muted}{HTML}{7A6558}
+
+% ── Polices (licence OFL) — fonts/ : liens vers assets/fonts du site + graisses propres au document
+\setmainfont{EBGaramond-400.ttf}[
+  Path = fonts/,
+  BoldFont = EBGaramond-600.ttf,
+  ItalicFont = EBGaramond-Italic.ttf,
+  SmallCapsFont = EBGaramond-400.ttf,
+  SmallCapsFeatures = {Letters = SmallCaps},
+  Ligatures = TeX,
+]
+\newfontfamily\weddingscript{PinyonScript-Regular.ttf}[Path = fonts/]
+
+\color{ink}
+\pagecolor{ivory}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\linespread{1.08}
+
+% ── Éléments décoratifs ───────────────────────────────────────────────────
+\newcommand{\gold}[1]{\textcolor{gold}{#1}}
+\newcommand{\ornament}{%
+  \begin{center}
+    \textcolor{gold}{\rule[0.6ex]{3.2cm}{0.4pt}\hspace{0.6em}\raisebox{0.15ex}{$\blacklozenge$}\hspace{0.6em}\rule[0.6ex]{3.2cm}{0.4pt}}
+  \end{center}}
+\newcommand{\scripttitle}[2]{{\weddingscript\fontsize{#1}{1.15\dimexpr#1\relax}\selectfont\textcolor{terracotta}{#2}}}
+
+% Titres de section : écriture manuscrite, initiale dorée
+\titleformat{\section}
+  {\centering\weddingscript\fontsize{30}{36}\selectfont\color{terracotta}}
+  {}{0pt}{}[\vspace{-0.4em}\ornament]
+\titlespacing*{\section}{0pt}{0.6em}{0.2em}
+\titleformat{\subsection}
+  {\large\color{terracotta}\scshape}
+  {}{0pt}{}
+\titlespacing*{\subsection}{0pt}{1.1em}{0.3em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\small\textcolor{muted}{Sarah Christy \& Joël Bertin — présentation du site \quad·\quad \thepage}}
+
+\setlist[itemize]{leftmargin=1.3em, label={\textcolor{gold}{$\diamond$}}, itemsep=0.15em, topsep=0.2em}
+
+% Capture d'écran encadrée d'un filet doré, avec légende
+\newcommand{\shot}[3]{%
+  \begin{minipage}[t]{#1}
+    \centering
+    \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.6pt}%
+    \fcolorbox{gold}{white}{\includegraphics[width=\dimexpr\linewidth-2\fboxrule\relax]{images/#2}}\\[0.35em]
+    {\small\textcolor{muted}{#3}}
+  \end{minipage}}
+
+% Encadré « à retenir » : filet doré à gauche, fond blanc
+\newtcolorbox{note}[1][À retenir]{
+  enhanced, sharp corners, frame hidden, colback=white,
+  borderline west={1.6pt}{0pt}{gold},
+  left=12pt, right=10pt, top=7pt, bottom=7pt,
+  before upper={{\scshape\color{terracotta}#1}\par\smallskip},
+}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════
+% Page de garde
+% ══════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+  \pagecolor{ivory}
+  \centering
+  \vspace*{2.2cm}
+  {\large\scshape\textcolor{muted}{Faire-part de mariage}}\\[1.4cm]
+  {\weddingscript\fontsize{58}{64}\selectfont
+    \textcolor{gold}{S}\textcolor{terracotta}{arah Christy}\\[0.2em]
+    \textcolor{gold}{\fontsize{42}{48}\selectfont \&}\\[0.2em]
+    \textcolor{gold}{J}\textcolor{terracotta}{oël Bertin}\par}
+  \ornament
+  \vspace{0.4cm}
+  {\Large\scshape\textcolor{terracotta}{Samedi 27 mars 2027}}\\[0.3em]
+  {\large Mairie de Mbouda}\\[2.2cm]
+  {\LARGE Présentation du site internet}\\[0.6em]
+  {\large\textcolor{muted}{Fonctionnalités et aperçu des écrans}}
+  \vfill
+  {\small\textcolor{muted}{Préparé par Shane Embolla — protocole}}
+\end{titlepage}
+
+% ══════════════════════════════════════════════════════════════════════════
+\section{Le site en un coup d'œil}
+
+Le site est le \textbf{faire-part numérique} du mariage. Il suffit de partager \textbf{un seul lien}, par WhatsApp, SMS ou e-mail, pour que chaque invité trouve tout ce dont il a besoin : la date, les lieux, le programme, les réponses à ses questions, et surtout \textbf{son billet d'entrée personnel}.
+
+\begin{itemize}
+  \item \textbf{Pensé pour le téléphone} : la très grande majorité des invités l'ouvriront depuis leur smartphone.
+  \item \textbf{Bilingue français / anglais} : la langue s'adapte automatiquement à celle du téléphone de l'invité. Un bouton permet de changer à tout moment.
+  \item \textbf{Aux couleurs du mariage} : terracotta, blanc cassé et or, avec une écriture manuscrite pour les titres et des initiales dorées.
+  \item \textbf{Un espace réservé au protocole}, protégé par mot de passe, pour suivre les invités, attribuer les tables et contrôler les entrées le jour J.
+\end{itemize}
+
+\begin{note}
+Les noms visibles sur les captures de ce document (\og Jean-Pierre Mbéki\fg, \og Paul Ndong\fg, \og Alice Kamga\fg\ldots) sont des \textbf{exemples fictifs} utilisés pour la démonstration.
+\end{note}
+
+\subsection{L'aperçu dans WhatsApp}
+Quand le lien est partagé, WhatsApp affiche automatiquement cette carte de présentation :
+
+\begin{center}
+  \shot{0.78\linewidth}{og.jpg}{Aperçu affiché lors du partage du lien}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Ce que voient les invités}
+
+\subsection{L'accueil}
+L'invité est accueilli par les noms des mariés, la date et un bouton qui mène directement à son billet. Dans la version finale, l'ouverture se fera par une \textbf{courte animation : le billet qui sort de l'enveloppe} au fil du défilement de la page (en cours de réalisation).
+
+\begin{center}
+  \shot{0.29\linewidth}{hero.jpg}{En français}\hfill
+  \shot{0.29\linewidth}{hero-en.jpg}{Sur un téléphone en anglais}\hfill
+  \shot{0.29\linewidth}{countdown.jpg}{Compte à rebours et ajout au calendrier}
+\end{center}
+
+\subsection{Le compte à rebours et le calendrier}
+Un compte à rebours indique en temps réel les jours, heures, minutes et secondes restants. Deux boutons permettent d'\textbf{ajouter le mariage au calendrier} du téléphone (iPhone, Outlook ou Google Agenda), avec un rappel la veille.
+
+\subsection{Le programme et les lieux}
+Le programme présente les grandes étapes de la journée. \textbf{Le jour du mariage, l'étape en cours est mise en évidence} automatiquement.
+
+Chaque lieu dispose de boutons \textbf{Google Maps, Waze et Apple Maps} : un simple toucher ouvre l'application de navigation du téléphone avec l'itinéraire jusqu'à la Mairie de Mbouda.
+
+\begin{center}
+  \shot{0.4\linewidth}{programme.jpg}{Programme de la journée}\hspace{0.08\linewidth}
+  \shot{0.4\linewidth}{lieux.jpg}{Lieux et boutons d'itinéraire}
+\end{center}
+
+\newpage
+\subsection{Dress code, questions fréquentes et contact}
+Le site rappelle le dress code et répond aux questions courantes (enfants, stationnement, impression du billet\ldots). Les questions sont \textbf{modifiables à tout moment par le protocole}, en français et en anglais, sans intervention technique. Enfin, un bouton ouvre directement une conversation \textbf{WhatsApp avec le protocole}.
+
+\begin{center}
+  \shot{0.31\linewidth}{dresscode.jpg}{Dress code}\hfill
+  \shot{0.31\linewidth}{faq.jpg}{Questions fréquentes}\hfill
+  \shot{0.31\linewidth}{contact.jpg}{Contact du protocole}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════
+\section{Le billet d'entrée}
+
+\subsection{Obtenir son billet}
+L'invité choisit un \textbf{billet solo} (une personne) ou un \textbf{billet couple} (deux personnes), indique son nom (et celui de son ou sa partenaire), puis touche \og Générer mon billet\fg. Le billet est prêt en quelques secondes et se télécharge au format PDF.
+
+\begin{center}
+  \shot{0.4\linewidth}{form.jpg}{Le formulaire}\hspace{0.08\linewidth}
+  \shot{0.4\linewidth}{success.jpg}{Le billet est prêt}
+\end{center}
+
+\begin{note}[Pensé pour éviter les doublons]
+\begin{itemize}
+  \item Si un invité remplit à nouveau le formulaire avec le même nom, il retrouve \textbf{le même billet} au lieu d'en créer un second.
+  \item Si les deux membres d'un couple s'inscrivent chacun de leur côté, ils obtiennent \textbf{un seul billet couple}.
+  \item Le téléphone se souvient du billet : l'invité peut le retélécharger à tout moment.
+\end{itemize}
+\end{note}
+
+\newpage
+\subsection{Le billet}
+Le billet reprend les noms des invités en écriture manuscrite, la date, le lieu, le nombre de personnes admises et le \textbf{numéro de table} dès qu'il a été attribué. Il est rédigé dans la langue de l'invité.
+
+\begin{center}
+  \shot{0.42\linewidth}{billet-couple-1.jpg}{Billet couple (français)}\hspace{0.06\linewidth}
+  \shot{0.42\linewidth}{billet-solo-1.jpg}{Billet solo (anglais)}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Le QR code} est scanné à l'entrée par le protocole. Il est unique et impossible à deviner.
+  \item \textbf{Le petit losange doré} à côté du QR code est un repère discret pour le protocole : plein si l'invité figure sur la liste, vide s'il n'y figure pas.
+  \item \textbf{Pas besoin de l'imprimer} : il suffit de le présenter sur son téléphone.
+\end{itemize}
+
+Le visuel ci-dessus est provisoire : il sera remplacé par le modèle de billet définitif aux couleurs du faire-part.
+
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Le jour du mariage}
+
+\subsection{Une surprise à l'ouverture du site}
+Le jour J, les invités qui ouvrent le site sont accueillis par un bandeau \og C'est aujourd'hui ! Bienvenue à notre mariage\fg{} et une \textbf{pluie de confettis} aux couleurs du mariage.
+
+\subsection{Le contrôle à l'entrée}
+À l'accueil, le protocole scanne le QR code du billet avec l'appareil photo de son téléphone. La fiche de l'invité s'affiche instantanément, avec un code couleur lisible d'un seul coup d'œil :
+
+\begin{center}
+  \shot{0.23\linewidth}{jour-j.jpg}{Le jour J}\hfill
+  \shot{0.23\linewidth}{scan-vert.jpg}{\textcolor{ink}{Vert} : invité attendu, pas encore entré}\hfill
+  \shot{0.23\linewidth}{scan-orange.jpg}{\textcolor{ink}{Orange} : hors liste, à vérifier}\hfill
+  \shot{0.23\linewidth}{scan-rouge.jpg}{\textcolor{ink}{Rouge} : billet déjà utilisé}
+\end{center}
+
+\begin{itemize}
+  \item La fiche indique les noms, le nombre de personnes et \textbf{la table en grand}, pour orienter immédiatement l'invité.
+  \item Un toucher sur \og Valider l'entrée\fg{} enregistre l'arrivée.
+  \item Si le même billet est présenté une seconde fois, la fiche passe au \textbf{rouge avec l'heure de la première entrée} : impossible d'entrer deux fois avec le même billet.
+  \item Si quelqu'un d'autre que le protocole scanne le billet, il voit seulement \og Billet valide\fg{} : aucune information de placement n'est divulguée.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{L'espace protocole}
+
+Accessible uniquement avec le mot de passe du protocole, cet espace permet d'organiser l'accueil avant et pendant le mariage, depuis un simple téléphone.
+
+\subsection{Le suivi des billets}
+Un tableau de bord donne en permanence le nombre de billets, de personnes attendues, d'invités sur la liste ou hors liste, et d'entrées déjà validées. Des filtres permettent de retrouver rapidement les billets \og hors liste\fg{} pour décider de leur sort : les ajouter à la liste, les associer à un invité existant ou les supprimer.
+
+\begin{center}
+  \shot{0.29\linewidth}{admin-login.jpg}{Connexion}\hfill
+  \shot{0.29\linewidth}{admin-billets.jpg}{Tableau de bord des billets}\hfill
+  \shot{0.29\linewidth}{admin-hors-liste.jpg}{Billets hors liste}
+\end{center}
+
+\newpage
+\subsection{La liste des invités et le plan de table}
+\begin{itemize}
+  \item \textbf{Ajout des invités} un par un, ou \textbf{en une seule fois} en copiant-collant une liste depuis Excel ou Google Sheets.
+  \item \textbf{Rapprochement automatique} : les billets déjà créés par des personnes ajoutées ensuite à la liste sont reconnus automatiquement, même si le nom a été saisi avec ou sans accents ou dans un ordre différent.
+  \item \textbf{Plan de table} : chaque table affiche ses places occupées (par exemple \og 4/10\fg) ; une table complète est signalée en rouge et ne peut plus recevoir d'invités.
+  \item \textbf{Export Excel} de tous les billets (noms, statut, table, heure d'entrée) en un clic.
+\end{itemize}
+
+\begin{center}
+  \shot{0.4\linewidth}{admin-invites.jpg}{Plan de table et ajout d'invités}\hspace{0.08\linewidth}
+  \shot{0.4\linewidth}{admin-faq.jpg}{Gestion des questions fréquentes}
+\end{center}
+
+\subsection{Les questions fréquentes}
+Le protocole ajoute, modifie, ordonne ou masque les questions en français et en anglais. Les changements apparaissent sur le site dès la visite suivante des invités.
+
+% ══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Confidentialité}
+
+\begin{itemize}
+  \item Le site \textbf{n'est pas référencé} sur Google : seules les personnes qui ont reçu le lien peuvent le trouver.
+  \item L'espace protocole est \textbf{protégé par mot de passe} ; la session expire automatiquement au bout de 7 jours.
+  \item Chaque billet porte un \textbf{code unique impossible à deviner} : on ne peut pas fabriquer un faux billet valide.
+  \item Seules les informations nécessaires sont demandées aux invités : leur nom (et celui de leur partenaire).
+\end{itemize}
+
+\section{Prochaines étapes}
+
+\begin{note}[Où en sommes-nous ?]
+\textbf{Déjà renseigné}
+\begin{itemize}
+  \item Date : \textbf{samedi 27 mars 2027} · Lieu : \textbf{Mairie de Mbouda}, réception à la \textbf{salle des fêtes de la Mairie}
+  \item Contact WhatsApp du protocole : \textbf{+237 688 38 92 15}
+\end{itemize}
+
+\textbf{À confirmer ou à fournir}
+\begin{itemize}
+  \item L'\textbf{heure de la cérémonie} et les horaires du programme (actuellement provisoires).
+  \item La \textbf{vidéo d'ouverture} : le billet qui sort de l'enveloppe.
+  \item Le \textbf{modèle de billet définitif} (facultatif : un modèle aux couleurs du mariage existe déjà).
+  \item La \textbf{liste des invités} avec, si possible, les tables.
+  \item Le \textbf{texte du dress code} et les questions fréquentes à publier.
+\end{itemize}
+
+\textbf{Ensuite} : finitions visuelles, mise en ligne du site, puis envoi du lien aux invités.
+\end{note}
+
+\vfill
+\begin{center}
+  {\weddingscript\fontsize{26}{30}\selectfont\textcolor{gold}{A}\textcolor{terracotta}{vec toute notre affection}}
+  \ornament
+\end{center}
+
+\end{document}
